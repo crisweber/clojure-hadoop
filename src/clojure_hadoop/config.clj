@@ -2,7 +2,8 @@
   (:require [clojure-hadoop.imports :as imp]
             [clojure-hadoop.load :as load])
   (:use [clojure.contrib.string :only [trim replace-re]]
-        [clojure.contrib.def :only [defvar]]))
+        [clojure.contrib.def :only [defvar]])
+  (:import (org.apache.hadoop.filecache DistributedCache)))
 
 ;; This file defines configuration options for clojure-hadoop.
 ;;
@@ -77,6 +78,10 @@
 ;; Job output path, as a String.
 (defmethod conf :output [^Job job key value]
   (FileOutputFormat/setOutputPath job (Path. (as-str value))))
+
+;; Job cache file, as a String.
+(defmethod conf :cache-file [^Job job key value]
+  (DistributedCache/addCacheFile (.toUri (Path. (as-str value))) (configuration job)))
 
 ;; When true or "true", deletes output path before starting.
 (defmethod conf :replace [^Job job key value]
@@ -333,5 +338,6 @@ Other available options are:
  -compress-output   If \"true\", compress job output files
  -output-compressor Compression class or \"gzip\",\"bzip2\",\"default\"
  -compression-type  For seqfiles, compress \"block\",\"record\",\"none\"
+ -cache-file        File to be added to DistributedCache
 "))
 
